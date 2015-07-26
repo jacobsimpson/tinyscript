@@ -1,0 +1,17 @@
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
+task(run, dependsOn: 'classes', type: JavaExec) {
+    main = 'jacob.simpson.tinyscript.Main'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'scripts/hello-world.ts'
+}
+ 
+defaultTasks 'run'
