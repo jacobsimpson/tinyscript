@@ -7,13 +7,16 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import jacob.simpson.tinyscript.grammar.TinyScriptLexer;
 import jacob.simpson.tinyscript.grammar.TinyScriptParser;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 public class Main {
 
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (args.length == 0) {
             printHelp();
             System.exit(0);
@@ -47,9 +50,69 @@ public class Main {
         // the .g4 file.
         ParseTree tree = parser.program();
 
+        // Step 2: Use the generated ANTLR visitor to generate byte code.
+        // Parsed computer programs are stored in a tree structure, commonly
+        // called an AST. A visitor for the tree will receive callbacks at each
+        // node of the tree, giving it a chance to see what information the
+        // parser found at that node and take some action at that time. The
+        // SimpleScript visitor will use the ASM library to generate byte code
+        // that corresponds to program statements SimpleScript supports.
+        final String className = "NewClass";
+        ByteCodeGenerationVisitor visitor = new ByteCodeGenerationVisitor(className);
+        visitor.visit(tree);
+
+        // Write the byte code to an output file. The produced class file
+        // should be executable with javac.
+//        try (FileOutputStream fos = new FileOutputStream(className + ".class")) {
+//            fos.write(visitor.getResult());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        // This little trick, recommended on the ASM website, will turn the
+        // byte[] produced by the ASM library, into a Java class, loaded in
+        // memory.
+        Class c = loadClass(className, visitor.getResult());
+
+        // Now that the new class is loaded into memory, use reflection to call
+        // the main method. Pass in the arguments to this method with the
+        // program name trimmed off.
+        MethodUtils.invokeExactStaticMethod(c,
+                "main",
+                new Object[]{Arrays.copyOfRange(args, 1, args.length)},
+                new Class<?>[]{String[].class});
+
     }
 
     private static void printHelp() {
         System.out.println("<program file>");
+    }
+
+    private static Class loadClass(String className, byte[] b) {
+        Class clazz = null;
+        try {
+            ClassLoader loader = ClassLoader.getSystemClassLoader();
+            Class cls = Class.forName("java.lang.ClassLoader");
+            java.lang.reflect.Method method =
+                    cls.getDeclaredMethod("defineClass",
+                            String.class,
+                            byte[].class,
+                            int.class,
+                            int.class);
+
+            // Java's defineClass method is protected by default,  so
+            // unprotect it so we can call it.
+            method.setAccessible(true);
+            try {
+                Object[] args = new Object[] { className, b, 0, b.length};
+                clazz = (Class) method.invoke(loader, args);
+            } finally {
+                method.setAccessible(false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return clazz;
     }
 }

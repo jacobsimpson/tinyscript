@@ -6,8 +6,14 @@ apply plugin: 'java'
 apply plugin: 'antlr'
 
 dependencies {
+    compile 'org.ow2.asm:asm:5.0.4'
+    compile 'org.apache.commons:commons-lang3:3.4'
     testCompile 'junit:junit:4.12'
     antlr "org.antlr:antlr4:4.5" // use ANTLR version 4
+}
+
+generateGrammarSource {
+    arguments += ["-visitor", "-long-messages"]
 }
 
 // By default, Antlr generates the source files in a directory that does not
