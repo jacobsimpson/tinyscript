@@ -33,5 +33,17 @@ task(run, dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     args 'scripts/hello-world.ts'
 }
- 
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Tiny Script',
+                'Implementation-Version': '1.0',
+                'Main-Class': 'jacob.simpson.tinyscript.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 defaultTasks 'run'
