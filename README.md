@@ -19,9 +19,12 @@ Two basic steps are illustrated:
 2. Download Gradle and install it.
 3. Build the project and create a consolidate jar that is the language
    interpreter:
-> gradle fatJar
+
+    gradle fatJar
+
 4. Run a sample script file
-> java -jar build/libs/TinyScript-all.jar scripts/hello-world.ts
+
+    java -jar build/libs/TinyScript-all.jar scripts/hello-world.ts
 
 ## Anatomy
 
@@ -40,8 +43,8 @@ into a single token:
 Parsing is the process of translating several tokens into a structure that
 relates the pieces together. For example, this script:
 
-    > print
-    > print "hello world"
+    print
+    print "hello world"
 
 should be translated into a stucture such that the first print is a statement
 on its own, but the second print has a string parameter.
