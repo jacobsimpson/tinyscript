@@ -3,9 +3,23 @@ repositories {
 }
 
 apply plugin: 'java'
+apply plugin: 'antlr'
 
 dependencies {
     testCompile 'junit:junit:4.12'
+    antlr "org.antlr:antlr4:4.5" // use ANTLR version 4
+}
+
+// By default, Antlr generates the source files in a directory that does not
+// match the package. This task will move the generated source files to a
+// directory matching the package.
+generateGrammarSource.doLast {
+    File generatedDir = file('build/generated-src/antlr/main')
+    File packageDir = new File(generatedDir, 'jacob/simpson/tinyscript/grammar')
+    packageDir.mkdirs()
+    generatedDir.listFiles().each {File file ->
+        file.renameTo(new File(packageDir, file.getName()))
+    }
 }
 
 task(run, dependsOn: 'classes', type: JavaExec) {
