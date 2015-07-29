@@ -10,7 +10,8 @@ options
 }
 
 program
-    :   ( printStatement | declarationStatement | assignmentStatement )*
+    :
+    |   ( COMMENT | printStatement | declarationStatement | assignmentStatement )*
     ;
 
 printStatement
@@ -45,6 +46,10 @@ IDENTIFIER
 
 INTEGER
     :   DIGIT+
+    ;
+
+COMMENT
+    :  '#' ~( '\r' | '\n' )*
     ;
 
 WS  :   [ \t\r\n]+ -> skip
