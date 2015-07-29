@@ -31,7 +31,7 @@ generateGrammarSource.doLast {
 task(run, dependsOn: 'classes', type: JavaExec) {
     main = 'jacob.simpson.tinyscript.Main'
     classpath = sourceSets.main.runtimeClasspath
-    args 'scripts/hello-world.ts'
+    args 'scripts/some-variables.ts'
 }
 
 //create a single Jar with all dependencies
